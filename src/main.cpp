@@ -5,6 +5,7 @@
 #define DRDY_PIN 21
 #define XTAL_PIN 22
 #define RESET 17
+//Comment
 
 int CLKOUT = 8192000;  //XTAL speed (50% duty cycle PWM)
 
