@@ -1,6 +1,6 @@
 #include <ADS131M08.h>
 
-//Joshua Brewster, Jacob Tinkhauser
+//Ahsan@Schneider_Electric
 #define CS_PIN 5
 #define DRDY_PIN 21
 #define XTAL_PIN 22
