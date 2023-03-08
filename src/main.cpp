@@ -1,11 +1,11 @@
+#include <Arduino.h>
 #include <ADS131M08.h>
 
-//Ahsan@Schneider_Electric
+//Ahsan
 #define CS_PIN 5
 #define DRDY_PIN 21
 #define XTAL_PIN 22
 #define RESET 17
-//Comment
 
 int CLKOUT = 8192000;  //XTAL speed (50% duty cycle PWM)
 
