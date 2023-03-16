@@ -3,6 +3,10 @@
 		{
 			"name": "Valise_V1",
 			"path": "C:/Users/user/OneDrive/Documents/PlatformIO/Projects/Valise_V1"
+		},
+		{
+			"name": "Clock_Control",
+			"path": "../Clock_Control"
 		}
 	]
 }
