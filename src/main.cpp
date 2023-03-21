@@ -18,7 +18,7 @@ char outputarr[128];
 
 
 TurboPWM pwm;
-const int ADC_CLK2 = 7;   //       8 is the pin number of mkr board
+const int ADC_CLK2 = 8;   //       8 is the pin number of mkr board
 
 void setup() {
   // put your setup code here, to run once:
