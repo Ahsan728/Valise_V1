@@ -22,7 +22,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
 
-  adc.init(CLKOUT);
+  adc.init();
 
   delay(100);
 
@@ -108,10 +108,10 @@ void loop() {
             currentMicros);
 
     Serial.print(outputarr);
-    //    Serial.print(channelArr[0]);
-    //    Serial.print("|");
-    //    Serial.print(currentMicros);
-    //    Serial.print("\r\n");
+       //Serial.print(channelArr[0]);
+        //Serial.print("|");
+        //Serial.print(currentMicros);
+        //Serial.print("\r\n");
     sampleNum++;
   }
 }
