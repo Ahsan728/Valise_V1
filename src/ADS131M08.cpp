@@ -1,48 +1,52 @@
 #include "ADS131M08.h"
-#include <SAMD21turboPWM.h>
+#include "SAMD21turboPWM.h"
 
-TurboPWM pwm;
-const int ADC_CLK2 = 7;   //       7 is the pin number of mkr board
+// Déclaration de la PWM
+TurboPWM ADC_CLK;
 
-ADS131M08::ADS131M08(int cs, int xtal, int drdy, int clk) {
-
-    CS = cs; XTAL = xtal; DRDY = drdy; //You don't have to use DRDY, can also read off the ADS131_STATUS register.
-    SpiClk = clk;
+ADS131M08::ADS131M08(int cs, int xtal_pin, int drdy_pin, int spi_slk)
+{
+    CS = cs;
+    XTAL = xtal_pin;
+    DRDY = drdy_pin; // You don't have to use DRDY, can also read off the ADS131_STATUS register.
+    SpiClk = spi_slk;
 }
 
-void ADS131M08::init () {
-
-    Serial.println("Setting pin configuration");
-        
-    pinMode(CS, OUTPUT); digitalWrite(CS, HIGH);
+void ADS131M08::init()
+{
+    // Configuration des GPIOs et démarrer la SPI.
+    pinMode(CS, OUTPUT);
+    digitalWrite(CS, HIGH);
     pinMode(DRDY, INPUT_PULLUP);
-    //SPI.begin();
     SPI.begin();
-    pwm.setClockDivider(1, true);     // Input clock is divided by 1 and sent to Generic Clock, Turbo is On
-    pwm.timer(0, 1, 47, true);       // Timer 1 is set to Generic Clock divided by 1, resolution is 250, normal aka fast aka single-slope PWM
-    pwm.analogWrite(ADC_CLK2, 500);
+    SPI.beginTransaction(SPISettings(SpiClk, MSBFIRST, SPI_MODE0));
 
-    Serial.println("SPI Ready...");
 
+    /* Start the clock for the ADC*/
+    ADC_CLK.setClockDivider(1, false);  // Utiliser le FDLL96 pour avoir la frequence de base la plus importante, pas de prescaler
+    ADC_CLK.timer(0, 1, 12, false);  // n'utiliser que la résolution pour determiner la frequence de la PWM   Fout = Fbase/2/resolution
+    ADC_CLK.analogWrite(XTAL, 500); // PWM frequency is now 0.5Hz, dutycycle is 500 / 1000 * 100% = 50%
 }
 
-void ADS131M08::readChannels(int8_t * channelArrPtr, int8_t channelArrLen, int32_t * outputArrPtr) {
-    
+void ADS131M08::readChannels(int8_t *channelArrPtr, int8_t channelArrLen, int32_t *outputArrPtr)
+{
+
     uint32_t rawDataArr[10];
 
     // Get data
     spiCommFrame(&rawDataArr[0]);
-    
+
     // Save the decoded data for each of the channels
-    for (int8_t i = 0; i<channelArrLen; i++) {
-        *outputArrPtr = twoCompDeco(rawDataArr[*channelArrPtr+1]);
+    for (int8_t i = 0; i < channelArrLen; i++)
+    {
+        *outputArrPtr = twoCompDeco(rawDataArr[*channelArrPtr + 1]);
         outputArrPtr++;
         channelArrPtr++;
     }
-    
 }
 
-void ADS131M08::readAllChannels(int32_t inputArr[8]) {
+void ADS131M08::readAllChannels(int32_t inputArr[8])
+{
     uint32_t rawDataArr[10];
     int8_t channelArrPtr = 0;
     int8_t channelArrLen = 8;
@@ -50,17 +54,19 @@ void ADS131M08::readAllChannels(int32_t inputArr[8]) {
     // Get data
     spiCommFrame(&rawDataArr[0]);
     // Save the decoded data for each of the channels
-    for (int8_t i = 0; i<8; i++) {
-        inputArr[i] = twoCompDeco(rawDataArr[channelArrPtr+1]);
+    for (int8_t i = 0; i < 8; i++)
+    {
+        inputArr[i] = twoCompDeco(rawDataArr[channelArrPtr + 1]);
         channelArrPtr++;
     }
 }
 
-int32_t ADS131M08::readChannelSingle(int8_t channel) {
+int32_t ADS131M08::readChannelSingle(int8_t channel)
+{
     /* Returns raw value from a single channel
         channel input from 0-7
     */
-    
+
     int32_t outputArr[1];
     int8_t channelArr[1] = {channel};
 
@@ -69,9 +75,9 @@ int32_t ADS131M08::readChannelSingle(int8_t channel) {
     return outputArr[0];
 }
 
-bool ADS131M08::globalChop(bool enabled, uint8_t log2delay) {
+bool ADS131M08::globalChop(bool enabled, uint8_t log2delay)
+{
     /* Function to configure global chop mode for the ADS131M04.
-
         INPUTS:
         enabled - Whether to enable global-chop mode.
         log2delay   - Base 2 log of the desired delay in modulator clocks periods
@@ -79,40 +85,41 @@ bool ADS131M08::globalChop(bool enabled, uint8_t log2delay) {
         Possible values are between and including 1 and 16, to give delays
         between 2 and 65536 clock periods respectively
         For more information, refer to the datasheet.
-
         Returns true if settings were written succesfully.
     */
 
     uint8_t delayRegData = log2delay - 1;
 
     // Get current settings for current detect mode from the CFG register
-    uint16_t currentDetSett = (readReg(ADS131_CFG) << 8) >>8;
-    
+    uint16_t currentDetSett = (readReg(ADS131_CFG) << 8) >> 8;
+
     uint16_t newRegData = (delayRegData << 12) + (enabled << 8) + currentDetSett;
 
     return writeReg(ADS131_CFG, newRegData);
 }
 
-bool ADS131M08::writeReg(uint8_t reg, uint16_t data) {
+bool ADS131M08::writeReg(uint8_t reg, uint16_t data)
+{
     /* Writes the content of data to the register reg
         Returns true if successful
     */
-    
+
     uint8_t commandPref = 0x06;
 
     // Make command word using syntax found in data sheet
-    uint16_t commandWord = (commandPref<<12) + (reg<<7);
+    uint16_t commandWord = (commandPref << 12) + (reg << 7);
 
     digitalWrite(CS, LOW);
     SPI.beginTransaction(SPISettings(SpiClk, MSBFIRST, SPI_MODE1));
 
     spiTransferWord(commandWord);
-    
+
     spiTransferWord(data);
 
     // Send 4 empty words
- 
-    for (uint8_t i=0; i<4; i++) {
+
+    for (uint8_t i = 0; i < 4; i++)
+    {
         spiTransferWord();
     }
 
@@ -123,18 +130,22 @@ bool ADS131M08::writeReg(uint8_t reg, uint16_t data) {
     uint32_t responseArr[10];
     spiCommFrame(&responseArr[0]);
 
-    if ( ( (0x04<<12) + (reg<<7) ) == responseArr[0]) {
+    if (((0x04 << 12) + (reg << 7)) == responseArr[0])
+    {
         return true;
-    } else {
+    }
+    else
+    {
         return false;
     }
 }
 
-uint16_t ADS131M08::readReg(uint8_t reg) {
+uint16_t ADS131M08::readReg(uint8_t reg)
+{
     /* Reads the content of single register found at address reg
         Returns register value
     */
-    
+
     uint8_t commandPref = 0x0A;
 
     // Make command word using syntax found in data sheet
@@ -150,21 +161,23 @@ uint16_t ADS131M08::readReg(uint8_t reg) {
     return responseArr[0] >> 16;
 }
 
-uint32_t ADS131M08::spiTransferWord(uint16_t inputData) {
+uint32_t ADS131M08::spiTransferWord(uint16_t inputData)
+{
     /* Transfer a 24 bit word
         Data returned is MSB aligned
-    */ 
+    */
 
     uint32_t data = SPI.transfer(inputData >> 8);
     data <<= 8;
-    data |= SPI.transfer((inputData<<8) >> 8);
+    data |= SPI.transfer((inputData << 8) >> 8);
     data <<= 8;
     data |= SPI.transfer(0x00);
 
     return data << 8;
 }
 
-void ADS131M08::spiCommFrame(uint32_t * outPtr, uint16_t command) {
+void ADS131M08::spiCommFrame(uint32_t *outPtr, uint16_t command)
+{
     // Saves all the data of a communication frame to an array with pointer outPtr
 
     digitalWrite(CS, LOW);
@@ -175,7 +188,8 @@ void ADS131M08::spiCommFrame(uint32_t * outPtr, uint16_t command) {
     *outPtr = spiTransferWord(command);
 
     // For the next 8 words, just read the data
-    for (uint8_t i=1; i < 9; i++) {
+    for (uint8_t i = 1; i < 9; i++)
+    {
         outPtr++;
         *outPtr = spiTransferWord() >> 8;
     }
@@ -189,42 +203,53 @@ void ADS131M08::spiCommFrame(uint32_t * outPtr, uint16_t command) {
     digitalWrite(CS, HIGH);
 }
 
-int32_t ADS131M08::twoCompDeco(uint32_t data) {
+int32_t ADS131M08::twoCompDeco(uint32_t data)
+{
     // Take the two's complement of the data
 
     data <<= 8;
     int32_t dataInt = (int)data;
 
-    return dataInt/pow(2,8);
+    return dataInt / pow(2, 8);
 }
 
-bool ADS131M08::setGain(int gain) { // apply gain to all channels (1 to 128, base 2 (1,2,4,8,16,32,64,128))
+bool ADS131M08::setGain(int gain)
+{ // apply gain to all channels (1 to 128, base 2 (1,2,4,8,16,32,64,128))
     uint16_t writegain = 0;
-    if(gain == 1 ) {
+    if (gain == 1)
+    {
         writegain = 0b0000000000000000;
-    }  
-    else if (gain == 2) {
+    }
+    else if (gain == 2)
+    {
         writegain = 0b0001000100010001;
     }
-    else if (gain == 4) {
+    else if (gain == 4)
+    {
         writegain = 0b0010001000100010;
     }
-    else if (gain == 8) { 
+    else if (gain == 8)
+    {
         writegain = 0b0011001100110011;
     }
-    else if (gain == 16) { 
+    else if (gain == 16)
+    {
         writegain = 0b0100010001000100;
     }
-    else if (gain == 32) {
+    else if (gain == 32)
+    {
         writegain = 0b0101010101010101;
     }
-    else if (gain == 64) {
+    else if (gain == 64)
+    {
         writegain = 0b0110011001100110;
     }
-    else if (gain == 128) {
+    else if (gain == 128)
+    {
         writegain = 0b0111011101110111;
     }
-    else {
+    else
+    {
         return false;
     }
     writeReg(ADS131_GAIN1, writegain);
