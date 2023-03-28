@@ -1,7 +1,8 @@
 #include "ADS131M08.h"
 #include <SAMD21turboPWM.h>
+
 TurboPWM pwm;
-const int ADC_CLK2 = 7;   //       8 is the pin number of mkr board
+const int ADC_CLK2 = 7;   //       7 is the pin number of mkr board
 
 ADS131M08::ADS131M08(int cs, int xtal, int drdy, int clk) {
 
@@ -15,11 +16,11 @@ void ADS131M08::init () {
         
     pinMode(CS, OUTPUT); digitalWrite(CS, HIGH);
     pinMode(DRDY, INPUT_PULLUP);
-    //spi->begin();
+    //SPI.begin();
     SPI.begin();
-  pwm.setClockDivider(1, true);     // Input clock is divided by 1 and sent to Generic Clock, Turbo is On
-  pwm.timer(0, 1, 47, true);       // Timer 1 is set to Generic Clock divided by 1, resolution is 250, normal aka fast aka single-slope PWM
-  pwm.analogWrite(ADC_CLK2, 500);
+    pwm.setClockDivider(1, true);     // Input clock is divided by 1 and sent to Generic Clock, Turbo is On
+    pwm.timer(0, 1, 47, true);       // Timer 1 is set to Generic Clock divided by 1, resolution is 250, normal aka fast aka single-slope PWM
+    pwm.analogWrite(ADC_CLK2, 500);
 
     Serial.println("SPI Ready...");
 
