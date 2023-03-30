@@ -6,9 +6,7 @@
 
 /* Definitions of all the addresses of the registers of the ADS131M04
    Chip. For the content of the registers, please refer to the datasheet:
-
    https://www.ti.com/lit/gpn/ads131m04
-
    Written by Imperial College London Rocketry
    Electronics subteam
 */
@@ -74,7 +72,8 @@
 
 class ADS131M08 {
     public:
-    SPIClass * spi = NULL; 
+
+    SPIClass * spi = NULL; // SPISettings(spiClk, MSBFIRST, SPI_MODE1)
     int CS, XTAL, DRDY;
     int SpiClk;
 
