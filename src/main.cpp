@@ -5,7 +5,7 @@
 
 //ADC SPI Parameters;
 #define ADC_CS          14       // à corriger
-#define ADC_CS1         6        // ADC Not used
+#define ADC_CS1         6        // ADC Non utilisé
 #define ADC_XTAL_PIN    7        //
 #define ADC_XTAL_VAL    2        // 2.048MHZ
 #define ADC_DRDY_PIN    4        //
@@ -14,7 +14,7 @@
 ADS131M08 ADC_ADC131(ADC_CS, ADC_XTAL_PIN, ADC_DRDY_PIN, SPI_FREQ);
 
 // DAC Parameters and waveforms
-#define DAC_ANALOG_RESOLUTION 8
+#define DAC_ANALOG_RESOLUTION 10
 uint16_t DAC_Waveform[] = { 
     128,131,134,137,140,143,146,149,152,155,158,162,165,167,170,173,
     176,179,182,185,188,190,193,196,198,201,203,206,208,211,213,215,
@@ -35,7 +35,7 @@ uint16_t DAC_Waveform[] = {
 };
 
 void ADC_SetParametres(ADS131M08 ADC_ADC131);
-//Channels[number of channels Sampeld, Sampling Counter]= ADC_ReadChannels(S_Channels,S_Suration);
+//Channels[number of channels Sampeld, Sampling Counter]= ADC_ReadChannels(S_Channels,S_duration);
 
 void setup() {
     /* Start Serial Comunication*/
@@ -81,10 +81,48 @@ void ADC_SetParametres(ADS131M08 ADC_ADC131){
   /* Write Setting Registers*/
   ADC_ADC131.writeReg(ADS131_CLOCK,0b1111111100011111); //Clock register (page 55 in datasheet)
   ADC_ADC131.setGain(1);
+
+  ADC_ADC131.writeReg(ADS131_CFG,0b0000011000001111);// CFG register (page 61 in datasheet)
+  ADC_ADC131.setGain(1);
+
+  ADC_ADC131.writeReg(ADS131_GAIN1,0b0000000000000111);// Gain1 register (page 57 in datasheet)
+  ADC_ADC131.setGain(1);
+
+  ADC_ADC131.writeReg(ADS131_GAIN2,0b0000000000000000);// Gain2 register (page 57 in datasheet)
+  ADC_ADC131.setGain(1);
+
+  //DC Block Filter settings:
+  ADC_ADC131.writeReg(ADS131_THRSHLD_LSB,0b0000000000001010);// THRSHLD_LSB register (page 63 in datasheet)
+  ADC_ADC131.setGain(1);
+  
+  //Channel settings
+  //ADC_ADC131.writeReg(ADS131_CH0_CFG,0b0000000000000000);
+  //ADC_ADC131.setGain(1);
+  
+  
   //ADC_ADC131.globalChop(true,2);
   /* Read and check Register values*/
   uint16_t clkreg = ADC_ADC131.readReg(ADS131_CLOCK);
   uint16_t gainreg = ADC_ADC131.readReg(ADS131_GAIN1);
-  Serial.println("CLOCK: ");
+  Serial.print("CLOCK: ");
   Serial.println(clkreg,BIN);
+
+  
+  //adc.globalChop(true,2);
+  
+  uint16_t id = ADC_ADC131.readReg(ADS131_ID);
+  Serial.print("ID: ");
+  Serial.println(id, BIN);
+  
+  uint16_t stat = ADC_ADC131.readReg(ADS131_STATUS);
+  Serial.print("Status: ");
+  Serial.println(stat, BIN);
+
+  uint16_t Mode = ADC_ADC131.readReg(ADS131_MODE);
+  Serial.print("Mode: ");
+  Serial.println(Mode, BIN);
+
+
   };
+
+
