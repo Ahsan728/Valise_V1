@@ -33,6 +33,59 @@ uint16_t DAC_Waveform[] = {
     37,40,42,44,47,49,52,54,57,59,62,65,67,70,73,76,
     79,82,85,88,90,93,97,100,103,106,109,112,115,118,121,124
 };
+//Register Table 
+
+uint16_t registerList[49] = {
+ ADS131_MODE_VAL, 
+ ADS131_CLOCK_VAL,
+ ADS131_GAIN1_VAL, 
+ ADS131_GAIN2_VAL, 
+ ADS131_CFG_VAL, 
+ ADS131_THRSHLD_MSB_VAL, 
+ ADS131_THRSHLD_LSB_VAL, 
+ ADS131_CH0_CFG_VAL, 
+ ADS131_CH0_OCAL_MSB_VAL, 
+ ADS131_CH0_OCAL_LSB_VAL, 
+ ADS131_CH0_GCAL_MSB_VAL, 
+ ADS131_CH0_GCAL_LSB_VAL, 
+ ADS131_CH1_CFG_VAL, 
+ ADS131_CH1_OCAL_MSB_VAL, 
+ ADS131_CH1_OCAL_LSB_VAL, 
+ ADS131_CH1_GCAL_MSB_VAL, 
+ ADS131_CH1_GCAL_LSB_VAL, 
+ ADS131_CH2_CFG_VAL, 
+ ADS131_CH2_OCAL_MSB_VAL, 
+ ADS131_CH2_OCAL_LSB_VAL, 
+ ADS131_CH2_GCAL_MSB_VAL, 
+ ADS131_CH2_GCAL_LSB_VAL, 
+ ADS131_CH3_CFG_VAL, 
+ ADS131_CH3_OCAL_MSB_VAL, 
+ ADS131_CH3_OCAL_LSB_VAL, 
+ ADS131_CH3_GCAL_MSB_VAL, 
+ ADS131_CH3_GCAL_LSB_VAL, 
+ ADS131_CH4_CFG_VAL, 
+ ADS131_CH4_OCAL_MSB_VAL, 
+ ADS131_CH4_OCAL_LSB_VAL, 
+ ADS131_CH4_GCAL_MSB_VAL, 
+ ADS131_CH4_GCAL_LSB_VAL, 
+ ADS131_CH5_CFG_VAL, 
+ ADS131_CH5_OCAL_MSB_VAL, 
+ ADS131_CH5_OCAL_LSB_VAL, 
+ ADS131_CH5_GCAL_MSB_VAL, 
+ ADS131_CH5_GCAL_LSB_VAL, 
+ ADS131_CH6_CFG_VAL, 
+ ADS131_CH6_OCAL_MSB_VAL, 
+ ADS131_CH6_OCAL_LSB_VAL, 
+ ADS131_CH6_GCAL_MSB_VAL, 
+ ADS131_CH6_GCAL_LSB_VAL, 
+ ADS131_CH7_CFG_VAL, 
+ ADS131_CH7_OCAL_MSB_VAL, 
+ ADS131_CH7_OCAL_LSB_VAL, 
+ ADS131_CH7_GCAL_MSB_VAL, 
+ ADS131_CH7_GCAL_LSB_VAL, 
+ ADS131_REGMAP_CRC_VAL,
+ ADS131_RESERVED_VAL
+};
 
 void ADC_SetParametres(ADS131M08 ADC_ADC131);
 //Channels[number of channels Sampeld, Sampling Counter]= ADC_ReadChannels(S_Channels,S_duration);
@@ -68,8 +121,47 @@ if(digitalRead(ADC_DRDY_PIN)) {
   }
   else {
   }
+
+  
+  for (int i = 0; i < 49; i++) {
+    uint16_t value = readRegister(registerList[i]);
+    Serial.print("Register ");
+    Serial.print(registerList[i]);
+    Serial.print(" value: ");
+    Serial.println(value);
+  }
+  
+  // write to registers
+  for (int i = 0; i < 49; i++) {
+    writeRegister(registerList[i], i);
+  }
+  
 }
 
+uint16_t readRegister(uint16_t address) {
+  // code to read from the register at the specified address
+  // return the value read
+  return registerList[address];
+}
+
+void writeRegister(uint16_t address, uint16_t value) {
+  // code to write to the register at the specified address
+  // using the specified value
+  registerList[address];
+  ADC_ADC131.writeReg(ADS131_THRSHLD_LSB,registerList[2]); 
+}
+/*
+uint16_t readRegister(uint16_t reg)
+{
+  return registerTable[reg];
+}
+
+uint16_t writeRegister(u_int16_t reg, u_int16_t val)
+{
+  registerTable[reg];
+  ADC_ADC131.writeReg(ADS131_THRSHLD_LSB,registerTable[2]); 
+}
+*/
 void ADC_SetParametres(ADS131M08 ADC_ADC131){
 
   /* Reset the ADC */
@@ -142,127 +234,4 @@ void ADC_SetParametres(ADS131M08 ADC_ADC131){
   Serial.print("CLOCK: ");
   Serial.println(clkreg,BIN);
 
-//Register Lookup Table 
-
-uint16_t registerTable[49] =
-{
- ADS131_MODE_VAL, 
- ADS131_CLOCK_VAL,
- ADS131_GAIN1_VAL, 
- ADS131_GAIN2_VAL, 
- ADS131_CFG_VAL, 
- ADS131_THRSHLD_MSB_VAL, 
- ADS131_THRSHLD_LSB_VAL, 
- ADS131_CH0_CFG_VAL, 
- ADS131_CH0_OCAL_MSB_VAL, 
- ADS131_CH0_OCAL_LSB_VAL, 
- ADS131_CH0_GCAL_MSB_VAL, 
- ADS131_CH0_GCAL_LSB_VAL, 
- ADS131_CH1_CFG_VAL, 
- ADS131_CH1_OCAL_MSB_VAL, 
- ADS131_CH1_OCAL_LSB_VAL, 
- ADS131_CH1_GCAL_MSB_VAL, 
- ADS131_CH1_GCAL_LSB_VAL, 
- ADS131_CH2_CFG_VAL, 
- ADS131_CH2_OCAL_MSB_VAL, 
- ADS131_CH2_OCAL_LSB_VAL, 
- ADS131_CH2_GCAL_MSB_VAL, 
- ADS131_CH2_GCAL_LSB_VAL, 
- ADS131_CH3_CFG_VAL, 
- ADS131_CH3_OCAL_MSB_VAL, 
- ADS131_CH3_OCAL_LSB_VAL, 
- ADS131_CH3_GCAL_MSB_VAL, 
- ADS131_CH3_GCAL_LSB_VAL, 
- ADS131_CH4_CFG_VAL, 
- ADS131_CH4_OCAL_MSB_VAL, 
- ADS131_CH4_OCAL_LSB_VAL, 
- ADS131_CH4_GCAL_MSB_VAL, 
- ADS131_CH4_GCAL_LSB_VAL, 
- ADS131_CH5_CFG_VAL, 
- ADS131_CH5_OCAL_MSB_VAL, 
- ADS131_CH5_OCAL_LSB_VAL, 
- ADS131_CH5_GCAL_MSB_VAL, 
- ADS131_CH5_GCAL_LSB_VAL, 
- ADS131_CH6_CFG_VAL, 
- ADS131_CH6_OCAL_MSB_VAL, 
- ADS131_CH6_OCAL_LSB_VAL, 
- ADS131_CH6_GCAL_MSB_VAL, 
- ADS131_CH6_GCAL_LSB_VAL, 
- ADS131_CH7_CFG_VAL, 
- ADS131_CH7_OCAL_MSB_VAL, 
- ADS131_CH7_OCAL_LSB_VAL, 
- ADS131_CH7_GCAL_MSB_VAL, 
- ADS131_CH7_GCAL_LSB_VAL, 
- ADS131_REGMAP_CRC_VAL,
- ADS131_RESERVED_VAL
-};
-
-/*
-uint16_t registerTable[48];
- {
- registerTable[0] = ADS131_MODE_VAL;
- registerTable[1] = ADS131_CLOCK_VAL;
- registerTable[2] = ADS131_GAIN1_VAL; 
- registerTable[3] = ADS131_GAIN2_VAL; 
- registerTable[4] = ADS131_CFG_VAL;
- registerTable[5] = ADS131_THRSHLD_MSB_VAL; 
- registerTable[6] = ADS131_THRSHLD_LSB_VAL; 
- registerTable[7] = ADS131_CH0_CFG_VAL;
- registerTable[8] = ADS131_CH0_OCAL_MSB_VAL; 
- registerTable[9] = ADS131_CH0_OCAL_LSB_VAL;
- registerTable[10] = ADS131_CH0_GCAL_MSB_VAL; 
- registerTable[11] = ADS131_CH0_GCAL_LSB_VAL; 
- registerTable[12] = ADS131_CH1_CFG_VAL;
- registerTable[13] = ADS131_CH1_OCAL_MSB_VAL; 
- registerTable[14] = ADS131_CH1_OCAL_LSB_VAL; 
- registerTable[15] = ADS131_CH1_GCAL_MSB_VAL; 
- registerTable[16] = ADS131_CH1_GCAL_LSB_VAL; 
- registerTable[17] = ADS131_CH2_CFG_VAL;
- registerTable[18] = ADS131_CH2_OCAL_MSB_VAL; 
- registerTable[19] = ADS131_CH2_OCAL_LSB_VAL; 
- registerTable[20] = ADS131_CH2_GCAL_MSB_VAL; 
- registerTable[21] = ADS131_CH2_GCAL_LSB_VAL; 
- registerTable[22] = ADS131_CH3_CFG_VAL;
- registerTable[23] = ADS131_CH3_OCAL_MSB_VAL; 
- registerTable[24] = ADS131_CH3_OCAL_LSB_VAL; 
- registerTable[25] = ADS131_CH3_GCAL_MSB_VAL; 
- registerTable[26] = ADS131_CH3_GCAL_LSB_VAL; 
- registerTable[27] = ADS131_CH4_CFG_VAL;
- registerTable[28] = ADS131_CH4_OCAL_MSB_VAL; 
- registerTable[29] = ADS131_CH4_OCAL_LSB_VAL; 
- registerTable[30] = ADS131_CH4_GCAL_MSB_VAL; 
- registerTable[31] = ADS131_CH4_GCAL_LSB_VAL; 
- registerTable[32] = ADS131_CH5_CFG_VAL;
- registerTable[33] = ADS131_CH5_OCAL_MSB_VAL; 
- registerTable[34] = ADS131_CH5_OCAL_LSB_VAL; 
- registerTable[35] = ADS131_CH5_GCAL_MSB_VAL; 
- registerTable[36] = ADS131_CH5_GCAL_LSB_VAL; 
- registerTable[37] = ADS131_CH6_CFG_VAL;
- registerTable[38] = ADS131_CH6_OCAL_MSB_VAL; 
- registerTable[39] = ADS131_CH6_OCAL_LSB_VAL; 
- registerTable[40] = ADS131_CH6_GCAL_MSB_VAL; 
- registerTable[41] = ADS131_CH6_GCAL_LSB_VAL; 
- registerTable[42] = ADS131_CH7_CFG_VAL;
- registerTable[43] = ADS131_CH7_OCAL_MSB_VAL; 
- registerTable[44] = ADS131_CH7_OCAL_LSB_VAL; 
- registerTable[45] = ADS131_CH7_GCAL_MSB_VAL; 
- registerTable[46] = ADS131_CH7_GCAL_LSB_VAL; 
- registerTable[47] = ADS131_REGMAP_CRC_VAL;
- registerTable[48] = ADS131_RESERVED_VAL;
-
- }
-*/
-/*
-uint16_t readRegister(uint16_t reg)
-{
-  return registerTable[reg];
 }
-
-uint16_t writeRegister(u_int16_t reg, u_int16_t val)
-{
-  registerTable[reg];
-  //ADC_ADC131.writeReg(ADS131_THRSHLD_LSB,registerTable[2]); 
-}
-*/
-
-  };
