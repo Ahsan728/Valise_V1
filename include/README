@@ -1,6 +1,25 @@
 ##This directory is intended for project header files.
 
 Here we are using two header files. ADS131M08.h is for ADC and SAMD21turboPWM.h is for generating high frequency clock signal. 
+##This directory is intended for project header files.
+
+Here we are using two header files. ADS131M08.h is for ADC and SAMD21turboPWM.h is for generating high frequency clock signal. 
+
+ADS131M08.h Description:
+All 49 register has been defined through address with the ID name from datasheet
+All 49 registers reset value has been defined.
+A class named ADS131M08 has been declared -
+SPISettings(spiClk, MSBFIRST, SPI_MODE1)
+Dummy word frame to write ADC during ADC data reads.
+
+
+SAMD21turboPWM.h Description:
+Generic Clock (GCLK) of SAMD boards with 96MHz register value defined.
+A class named TurboPWM has been declared -
+Main clock divider: 1 to 255 for both TCC0 and TCC1 (TCC:Timer Counter Control)
+False for 48MHz clock, true for 96MHz clock
+Table for looking up and storing values for TCCx
+Tables for looking up pin mappings etc. for different boards
 
 ```src/main.c
 
