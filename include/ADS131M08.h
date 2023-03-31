@@ -1,15 +1,5 @@
 #ifndef ADS131M08_H
 #define ADS131M08_H
-//ADS131M08.cpp LGPL 
-//Adapted for the 8 channel device from https://github.com/icl-rocketry/ADS131M04-Lib (LGPL)
-
-
-/* Definitions of all the addresses of the registers of the ADS131M04
-   Chip. For the content of the registers, please refer to the datasheet:
-   https://www.ti.com/lit/gpn/ads131m04
-   Written by Imperial College London Rocketry
-   Electronics subteam
-*/
 
 #include <Arduino.h>
 #include <SPI.h>
