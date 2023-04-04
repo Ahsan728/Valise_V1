@@ -122,7 +122,7 @@ if(digitalRead(ADC_DRDY_PIN)) {
   else {
   }
 
-  
+   // Read the registers list
   for (int i = 0; i < 49; i++) {
     uint16_t value = ADC_ADC131.readReg(registerList[i]);
     Serial.print("Register ");
@@ -131,11 +131,11 @@ if(digitalRead(ADC_DRDY_PIN)) {
     Serial.println(value);
   }
   
-  // write to registers
+  // write to registers list
   for (int i = 0; i < 49; i++) {
     ADC_ADC131.writeReg(registerList[i], i);
   }
-  //Variables to store and measure elapsed time and define the number of conversions
+  //Sampling Rate Measurement
   long numberOfSamples = 150000; //Number of conversions
   long finishTime = 0;
   long startTime = micros();
@@ -153,20 +153,6 @@ if(digitalRead(ADC_DRDY_PIN)) {
     Serial.print(numberOfSamples * (1000000.0 / finishTime), 3);
     Serial.println(" SPS");
 
-}
-
-uint16_t readRegister(uint16_t address) {
-  // code to read from the register at the specified address
-  // return the value read
-  return registerList[address];
-}
-
-void writeRegister(uint16_t address, uint16_t value) {
-  // code to write to the register at the specified address
-  // using the specified value
-  registerList[address];
-  ADC_ADC131.writeReg(ADS131_THRSHLD_LSB,registerList[2]); 
-  ADC_ADC131.writeReg(ADS131_CLOCK, registerList[2]);
 }
 
 void ADC_SetParametres(ADS131M08 ADC_ADC131){
@@ -242,21 +228,3 @@ void ADC_SetParametres(ADS131M08 ADC_ADC131){
   Serial.println(clkreg,BIN);
 
 }
-
-/*
-float getADCReading()
-{
-  unsigned short data = 0;
-  int i=0;
-  static long accumulator=OL;
-  float result=OL;
-while (i<=15)
-{
-  data = ADDATA;
-  accumulator+=data;
-  i++;
-}
-result = (accumulator/16.0); //Average
-return result;
-}
-*/
