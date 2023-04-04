@@ -124,7 +124,7 @@ if(digitalRead(ADC_DRDY_PIN)) {
 
   
   for (int i = 0; i < 49; i++) {
-    uint16_t value = readRegister(registerList[i]);
+    uint16_t value = ADC_ADC131.readReg(registerList[i]);
     Serial.print("Register ");
     Serial.print(registerList[i]);
     Serial.print(" value: ");
@@ -133,9 +133,26 @@ if(digitalRead(ADC_DRDY_PIN)) {
   
   // write to registers
   for (int i = 0; i < 49; i++) {
-    writeRegister(registerList[i], i);
+    ADC_ADC131.writeReg(registerList[i], i);
   }
-  
+  //Variables to store and measure elapsed time and define the number of conversions
+  long numberOfSamples = 150000; //Number of conversions
+  long finishTime = 0;
+  long startTime = micros();
+  for (long i = 0; i < numberOfSamples; i++)
+    {
+      ADC_ADC131.readAllChannels(channelArr);
+    }
+  finishTime = micros() - startTime; //Calculate the elapsed time
+  //Printing the results
+    Serial.print("Total conversion time for 150k samples: ");
+    Serial.print(finishTime);
+    Serial.println(" us");
+
+    Serial.print("Sampling rate: ");
+    Serial.print(numberOfSamples * (1000000.0 / finishTime), 3);
+    Serial.println(" SPS");
+
 }
 
 uint16_t readRegister(uint16_t address) {
@@ -149,19 +166,9 @@ void writeRegister(uint16_t address, uint16_t value) {
   // using the specified value
   registerList[address];
   ADC_ADC131.writeReg(ADS131_THRSHLD_LSB,registerList[2]); 
-}
-/*
-uint16_t readRegister(uint16_t reg)
-{
-  return registerTable[reg];
+  ADC_ADC131.writeReg(ADS131_CLOCK, registerList[2]);
 }
 
-uint16_t writeRegister(u_int16_t reg, u_int16_t val)
-{
-  registerTable[reg];
-  ADC_ADC131.writeReg(ADS131_THRSHLD_LSB,registerTable[2]); 
-}
-*/
 void ADC_SetParametres(ADS131M08 ADC_ADC131){
 
   /* Reset the ADC */
@@ -235,3 +242,21 @@ void ADC_SetParametres(ADS131M08 ADC_ADC131){
   Serial.println(clkreg,BIN);
 
 }
+
+/*
+float getADCReading()
+{
+  unsigned short data = 0;
+  int i=0;
+  static long accumulator=OL;
+  float result=OL;
+while (i<=15)
+{
+  data = ADDATA;
+  accumulator+=data;
+  i++;
+}
+result = (accumulator/16.0); //Average
+return result;
+}
+*/
