@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "ADS_Main",
+			"path": "../ADS_Main"
+		}
+	],
+	"settings": {}
+}

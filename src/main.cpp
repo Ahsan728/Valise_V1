@@ -12,6 +12,7 @@
 #define SPI_FREQ        2000000
 #define RESET           2
 ADS131M08 ADC_ADC131(ADC_CS, ADC_XTAL_PIN, ADC_DRDY_PIN, SPI_FREQ);
+long NumberOfSamples = 100;
 
 // DAC Parameters and waveforms
 #define DAC_ANALOG_RESOLUTION 10
@@ -34,8 +35,7 @@ uint16_t DAC_Waveform[] = {
     79,82,85,88,90,93,97,100,103,106,109,112,115,118,121,124
 };
 //Register Table 
-
-uint16_t registerList[49] = {
+uint16_t ADC_Registers_Val[49] = {
  ADS131_MODE_VAL, 
  ADS131_CLOCK_VAL,
  ADS131_GAIN1_VAL, 
@@ -87,13 +87,67 @@ uint16_t registerList[49] = {
  ADS131_RESERVED_VAL
 };
 
+
+uint16_t ADC_Registers_Add[49] = {
+ ADS131_MODE, 
+ ADS131_CLOCK,
+ ADS131_GAIN1, 
+ ADS131_GAIN2, 
+ ADS131_CFG, 
+ ADS131_THRSHLD_MSB, 
+ ADS131_THRSHLD_LSB, 
+ ADS131_CH0_CFG, 
+ ADS131_CH0_OCAL_MSB, 
+ ADS131_CH0_OCAL_LSB, 
+ ADS131_CH0_GCAL_MSB, 
+ ADS131_CH0_GCAL_LSB, 
+ ADS131_CH1_CFG, 
+ ADS131_CH1_OCAL_MSB, 
+ ADS131_CH1_OCAL_LSB, 
+ ADS131_CH1_GCAL_MSB, 
+ ADS131_CH1_GCAL_LSB, 
+ ADS131_CH2_CFG, 
+ ADS131_CH2_OCAL_MSB, 
+ ADS131_CH2_OCAL_LSB, 
+ ADS131_CH2_GCAL_MSB, 
+ ADS131_CH2_GCAL_LSB, 
+ ADS131_CH3_CFG, 
+ ADS131_CH3_OCAL_MSB, 
+ ADS131_CH3_OCAL_LSB, 
+ ADS131_CH3_GCAL_MSB, 
+ ADS131_CH3_GCAL_LSB, 
+ ADS131_CH4_CFG, 
+ ADS131_CH4_OCAL_MSB, 
+ ADS131_CH4_OCAL_LSB, 
+ ADS131_CH4_GCAL_MSB, 
+ ADS131_CH4_GCAL_LSB, 
+ ADS131_CH5_CFG, 
+ ADS131_CH5_OCAL_MSB, 
+ ADS131_CH5_OCAL_LSB, 
+ ADS131_CH5_GCAL_MSB, 
+ ADS131_CH5_GCAL_LSB, 
+ ADS131_CH6_CFG, 
+ ADS131_CH6_OCAL_MSB, 
+ ADS131_CH6_OCAL_LSB, 
+ ADS131_CH6_GCAL_MSB, 
+ ADS131_CH6_GCAL_LSB, 
+ ADS131_CH7_CFG, 
+ ADS131_CH7_OCAL_MSB, 
+ ADS131_CH7_OCAL_LSB, 
+ ADS131_CH7_GCAL_MSB, 
+ ADS131_CH7_GCAL_LSB, 
+ ADS131_REGMAP_CRC,
+ ADS131_RESERVED
+};
+
 void ADC_SetParametres(ADS131M08 ADC_ADC131);
 //Channels[number of channels Sampeld, Sampling Counter]= ADC_ReadChannels(S_Channels,S_duration);
 
 void setup() {
     /* Start Serial Comunication*/
       Serial.begin(9600);
-
+      delay(500);
+      while(!Serial);
     /* Start the clock for the ADC*/
     ADC_ADC131.init();
     ADC_SetParametres(ADC_ADC131);
@@ -106,8 +160,12 @@ void setup() {
 }
 
 void loop() {
+
 static uint32_t loopCount = 0;
 int32_t channelArr[8] = {};
+
+while (NumberOfSamples>0)
+{
 
 if(digitalRead(ADC_DRDY_PIN)) {
     // Read Data
@@ -118,23 +176,15 @@ if(digitalRead(ADC_DRDY_PIN)) {
     analogWrite( A0, DAC_Waveform[loopCount]/1);
     loopCount = loopCount + 1;
     if (loopCount==255) {loopCount=0;}
+    NumberOfSamples=NumberOfSamples-1;
   }
   else {
   }
+}
 
-   // Read the registers list
-  for (int i = 0; i < 49; i++) {
-    uint16_t value = ADC_ADC131.readReg(registerList[i]);
-    Serial.print("Register ");
-    Serial.print(registerList[i]);
-    Serial.print(" value: ");
-    Serial.println(value);
-  }
-  
-  // write to registers list
-  for (int i = 0; i < 49; i++) {
-    ADC_ADC131.writeReg(registerList[i], i);
-  }
+
+
+/*
   //Sampling Rate Measurement
   long numberOfSamples = 150000; //Number of conversions
   long finishTime = 0;
@@ -152,7 +202,7 @@ if(digitalRead(ADC_DRDY_PIN)) {
     Serial.print("Sampling rate: ");
     Serial.print(numberOfSamples * (1000000.0 / finishTime), 3);
     Serial.println(" SPS");
-
+*/
 }
 
 void ADC_SetParametres(ADS131M08 ADC_ADC131){
@@ -163,8 +213,30 @@ void ADC_SetParametres(ADS131M08 ADC_ADC131){
   delay(1);
   digitalWrite(RESET, HIGH);
 
-  /* Write Setting Registers*/
-  ADC_ADC131.writeReg(ADS131_MODE,0b0000010100010000);// Gain2 register (page 57 in datasheet)
+  // write to registers list
+  for (int i = 0; i < 49; i++) {
+    ADC_ADC131.writeReg(ADC_Registers_Add[i], ADC_Registers_Val[i]);
+    Serial.println("Register ");
+    Serial.println(ADC_Registers_Add[i]);
+    Serial.println(" value: ");
+    Serial.println(ADC_Registers_Val[i]);
+    delay(100);
+  }
+  
+ 
+    // Read the registers list
+  for (int i = 0; i < 49; i++) {
+    ADC_ADC131.readReg(ADC_Registers_Add[i]);
+    Serial.print("Register ");
+    Serial.print(ADC_Registers_Add[i]);
+    Serial.print(" value: ");
+    Serial.println(ADC_Registers_Val[i]);
+  } 
+ 
+ 
+ /*
+  // Write Setting Registers
+  //ADC_ADC131.writeReg(ADS131_MODE,0b0000010100010000);// Gain2 register (page 57 in datasheet)
   ADC_ADC131.writeReg(ADS131_CLOCK,0b1111111100011111); //Clock register (page 55 in datasheet)
   ADC_ADC131.writeReg(ADS131_GAIN1,0b0000000000000111);// Gain1 register (page 57 in datasheet)
   ADC_ADC131.writeReg(ADS131_GAIN2,0b0000000000000000);// Gain2 register (page 57 in datasheet)
@@ -217,14 +289,15 @@ void ADC_SetParametres(ADS131M08 ADC_ADC131){
 
   ADC_ADC131.writeReg(ADS131_REGMAP_CRC,0b0000000000000000);
   ADC_ADC131.writeReg(ADS131_RESERVED,0b0000000000000000);
+  
   ADC_ADC131.setGain(1);
   
   
   //ADC_ADC131.globalChop(true,2);
-  /* Read and check Register values*/
+  // Read and check Register values
   uint16_t clkreg = ADC_ADC131.readReg(ADS131_CLOCK);
   uint16_t gainreg = ADC_ADC131.readReg(ADS131_GAIN1);
   Serial.print("CLOCK: ");
   Serial.println(clkreg,BIN);
-
+*/
 }
